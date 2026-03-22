@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDP Spark Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0a0f1e;color:#e5e7eb;line-height:1.5}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+header{background:linear-gradient(135deg,#1e3a8a 0%,#581c87 100%);padding:24px 32px;border-radius:14px;margin-bottom:20px}
+header h1{font-size:24px;font-weight:700} header h1 span{background:linear-gradient(90deg,#93c5fd,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:#94a3b8;font-size:13px}
+.grid{display:grid;gap:14px;margin-bottom:14px}
+.grid-6{grid-template-columns:repeat(6,1fr)} .grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)} .grid-2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1200px){.grid-6{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.grid-6,.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
+.card{background:rgba(17,24,39,0.7);border:1px solid #1f2937;border-radius:12px;padding:18px}
+.card h3{font-size:14px;font-weight:600;color:#d1d5db;margin-bottom:14px}
+.kpi{text-align:center;padding:14px;border-radius:12px}
+.kpi .value{font-size:26px;font-weight:700} .kpi .label{font-size:11px;color:#9ca3af;margin-top:3px}
+.kpi-blue{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2)} .kpi-blue .value{color:#60a5fa}
+.kpi-green{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)} .kpi-green .value{color:#34d399}
+.kpi-amber{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)} .kpi-amber .value{color:#fbbf24}
+.kpi-red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)} .kpi-red .value{color:#f87171}
+.kpi-purple{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2)} .kpi-purple .value{color:#a78bfa}
+.kpi-teal{background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.2)} .kpi-teal .value{color:#2dd4bf}
+.health{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.section{margin-top:28px;margin-bottom:14px;font-size:18px;font-weight:700;color:#f3f4f6;border-bottom:2px solid #1f2937;padding-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 10px;color:#9ca3af;font-weight:500;border-bottom:1px solid #1f2937}
+td{padding:7px 10px;border-bottom:1px solid rgba(31,41,55,0.5)} tr:hover{background:rgba(31,41,55,0.3)}
+.text-right{text-align:right} .text-center{text-align:center}
+.text-green{color:#34d399} .text-amber{color:#fbbf24} .text-red{color:#f87171}
+.text-blue{color:#60a5fa} .text-purple{color:#a78bfa} .text-gray{color:#9ca3af}
+.font-mono{font-family:'SF Mono',monospace;font-size:11px}
+.progress-bar{width:100%;height:8px;background:#1f2937;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px}
+.okr-card{border-left:4px solid;padding-left:14px;margin-bottom:16px}
+.okr-card .obj{font-size:15px;font-weight:600;margin-bottom:6px}
+.kr-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.kr-num{width:20px;height:20px;border-radius:4px;background:rgba(139,92,246,0.2);color:#a78bfa;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.kr-bar{width:70px;flex-shrink:0} .kr-pct{width:36px;text-align:right;color:#9ca3af;font-size:11px;flex-shrink:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500}
+.badge-high{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+.badge-medium{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)}
+.badge-low{background:rgba(107,114,128,0.15);color:#9ca3af;border:1px solid rgba(107,114,128,0.3)}
+.chart-container{position:relative;height:260px}
+.chart-sm{height:200px}
+.status-pill{text-align:center;padding:10px;background:rgba(31,41,55,0.5);border-radius:8px}
+.status-pill .value{font-size:22px;font-weight:700} .status-pill .label{font-size:10px;color:#9ca3af}
+.label-cloud{display:flex;flex-wrap:wrap;gap:6px}
+.label-tag{padding:4px 10px;border-radius:6px;font-size:11px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1><span>HDP Spark</span> Dashboard Report</h1>
+  <p>Jira &amp; Confluence Analytics &bull; 100 Issues &bull; 5 Sprints &bull; 4 Epics &bull; 8 Team Members &bull; 4 OKRs</p>
+</header>
+
+<!-- KPIs -->
+<div class="grid grid-6">
+  <div class="kpi kpi-blue"><div class="value">100</div><div class="label">Total Issues</div></div>
+  <div class="kpi kpi-green"><div class="value">44</div><div class="label">Completed (44%)</div></div>
+  <div class="kpi kpi-amber"><div class="value">56</div><div class="label">Open</div></div>
+  <div class="kpi kpi-red"><div class="value">3</div><div class="label">Blockers</div></div>
+  <div class="kpi kpi-purple"><div class="value">9.5d</div><div class="label">Avg Cycle Time</div></div>
+  <div class="kpi kpi-teal"><div class="value">2.4</div><div class="label">Throughput/wk</div></div>
+</div>
+
+<!-- Health + Charts -->
+<div class="grid grid-3">
+  <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="width:72px;height:72px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;box-shadow:0 0 25px #f59e0b40;"><span style="color:white;font-size:22px;font-weight:700;">B</span></div>
+    <div style="margin-top:10px;font-size:15px;font-weight:600;color:#f59e0b">At Risk</div>
+    <div style="font-size:11px;color:#6b7280;">Project Health</div>
+    <div style="display:flex;gap:20px;margin-top:14px;">
+      <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#60a5fa">199.0</div><div style="font-size:10px;color:#6b7280">SP Done</div></div>
+      <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#6b7280">444.0</div><div style="font-size:10px;color:#6b7280">SP Total</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:#6b7280;">Defect Density: 0.23 &bull; Overdue: 33</div>
+  </div>
+  <div class="card"><h3>Issue Types</h3><div class="chart-container chart-sm"><canvas id="typeChart"></canvas></div></div>
+  <div class="card"><h3>Priority Breakdown</h3><div class="chart-container chart-sm"><canvas id="priorityChart"></canvas></div></div>
+</div>
+
+<!-- Status -->
+<div class="card" style="margin-bottom:14px"><h3>Status Overview</h3><div style="display:flex;gap:10px;flex-wrap:wrap;"><div class="status-pill" style="flex:1;min-width:100px"><div class="value" style="color:#3b82f6">16</div><div class="label">In Progress</div></div>
+<div class="status-pill" style="flex:1;min-width:100px"><div class="value" style="color:#8b5cf6">22</div><div class="label">To Do</div></div>
+<div class="status-pill" style="flex:1;min-width:100px"><div class="value" style="color:#f59e0b">44</div><div class="label">Done</div></div>
+<div class="status-pill" style="flex:1;min-width:100px"><div class="value" style="color:#10b981">15</div><div class="label">In Review</div></div>
+<div class="status-pill" style="flex:1;min-width:100px"><div class="value" style="color:#ef4444">3</div><div class="label">Blocked</div></div></div></div>
+
+<!-- Sprints -->
+<h2 class="section">Sprint Analytics</h2>
+<div class="grid grid-2">
+  <div class="card"><h3>Sprint Velocity Trend</h3><div class="chart-container"><canvas id="velocityChart"></canvas></div></div>
+  <div class="card"><h3>Weekly Throughput</h3><div class="chart-container"><canvas id="throughputChart"></canvas></div></div>
+</div>
+<div class="grid grid-2">
+  <div class="card"><h3>Completion Rate</h3><div class="chart-container"><canvas id="completionChart"></canvas></div></div>
+  <div class="card"><h3>Planned vs Completed (SP)</h3><div class="chart-container"><canvas id="plannedVsCompChart"></canvas></div></div>
+</div>
+<div class="card"><h3>Sprint Details</h3>
+<table><thead><tr><th>Sprint</th><th class="text-right">Total</th><th class="text-right">Done</th><th class="text-right">Carry Over</th><th class="text-right">Velocity</th><th class="text-right">Completion</th></tr></thead>
+<tbody><tr><td>Sprint 2025-Q4-1</td><td class="text-right">24</td><td class="text-right text-green">14</td><td class="text-right text-amber">10</td><td class="text-right text-blue">67.0</td><td class="text-right text-amber">58.3%</td></tr>
+<tr><td>Sprint 2025-Q4-2</td><td class="text-right">15</td><td class="text-right text-green">9</td><td class="text-right text-amber">6</td><td class="text-right text-blue">32.0</td><td class="text-right text-amber">60.0%</td></tr>
+<tr><td>Sprint 2025-Q4-3</td><td class="text-right">21</td><td class="text-right text-green">8</td><td class="text-right text-amber">13</td><td class="text-right text-blue">14.0</td><td class="text-right text-red">38.1%</td></tr>
+<tr><td>Sprint 2026-Q1-1</td><td class="text-right">15</td><td class="text-right text-green">4</td><td class="text-right text-amber">11</td><td class="text-right text-blue">36.0</td><td class="text-right text-red">26.7%</td></tr>
+<tr><td>Sprint 2026-Q1-2</td><td class="text-right">25</td><td class="text-right text-green">9</td><td class="text-right text-amber">16</td><td class="text-right text-blue">50.0</td><td class="text-right text-red">36.0%</td></tr></tbody></table></div>
+
+<!-- Team -->
+<h2 class="section">Team Performance</h2>
+<div class="grid grid-2">
+  <div class="card"><h3>Workload Distribution</h3><div class="chart-container"><canvas id="teamWorkloadChart"></canvas></div></div>
+  <div class="card"><h3>Story Points Delivered</h3><div class="chart-container"><canvas id="teamSPChart"></canvas></div></div>
+</div>
+<div class="card"><h3>Team Summary</h3>
+<table><thead><tr><th>Member</th><th class="text-right">Assigned</th><th class="text-right">Completed</th><th class="text-right">SP Done</th><th class="text-right">Avg Cycle</th><th class="text-right">Bugs</th><th class="text-right">Blockers</th></tr></thead>
+<tbody><tr><td>Alice Chen</td><td class="text-right">14</td><td class="text-right text-green">7</td><td class="text-right text-blue">24.0</td><td class="text-right text-purple">9.4d</td><td class="text-right text-amber">5</td><td class="text-right text-red">0</td></tr>
+<tr><td>Bob Martinez</td><td class="text-right">14</td><td class="text-right text-green">9</td><td class="text-right text-blue">34.0</td><td class="text-right text-purple">10.2d</td><td class="text-right text-amber">1</td><td class="text-right text-red">0</td></tr>
+<tr><td>Carol Okonkwo</td><td class="text-right">8</td><td class="text-right text-green">5</td><td class="text-right text-blue">22.0</td><td class="text-right text-purple">8.2d</td><td class="text-right text-amber">1</td><td class="text-right text-red">0</td></tr>
+<tr><td>David Kim</td><td class="text-right">7</td><td class="text-right text-green">2</td><td class="text-right text-blue">4.0</td><td class="text-right text-purple">4.0d</td><td class="text-right text-amber">0</td><td class="text-right text-red">0</td></tr>
+<tr><td>Eva Petrov</td><td class="text-right">18</td><td class="text-right text-green">7</td><td class="text-right text-blue">54.0</td><td class="text-right text-purple">11.0d</td><td class="text-right text-amber">3</td><td class="text-right text-red">0</td></tr>
+<tr><td>Frank Johnson</td><td class="text-right">15</td><td class="text-right text-green">4</td><td class="text-right text-blue">22.0</td><td class="text-right text-purple">11.8d</td><td class="text-right text-amber">5</td><td class="text-right text-red">1</td></tr>
+<tr><td>Grace Liu</td><td class="text-right">11</td><td class="text-right text-green">7</td><td class="text-right text-blue">23.0</td><td class="text-right text-purple">7.7d</td><td class="text-right text-amber">2</td><td class="text-right text-red">1</td></tr>
+<tr><td>Hassan Ali</td><td class="text-right">12</td><td class="text-right text-green">3</td><td class="text-right text-blue">16.0</td><td class="text-right text-purple">11.3d</td><td class="text-right text-amber">6</td><td class="text-right text-red">0</td></tr></tbody></table></div>
+
+<!-- Epics -->
+<h2 class="section">Epic Progress</h2>
+<div class="card" style="margin-bottom:14px"><h3>Epic Progress Overview</h3><div class="chart-container"><canvas id="epicChart"></canvas></div></div>
+<div class="grid grid-4"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;">Dashboard & Reporting Engine</span><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span></div><div class="progress-bar"><div class="progress-fill" style="width:42.9%;background:#f59e0b"></div></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;"><span class="text-green">9 done</span><span class="text-blue">7 in prog</span><span class="text-gray">5 todo</span></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #1f2937;font-size:11px;color:#6b7280;display:flex;justify-content:space-between;"><span>SP: 34.0/103.0</span><span>42.9%</span></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;">Data Pipeline Modernization</span><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span></div><div class="progress-bar"><div class="progress-fill" style="width:53.8%;background:#f59e0b"></div></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;"><span class="text-green">14 done</span><span class="text-blue">10 in prog</span><span class="text-gray">2 todo</span></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #1f2937;font-size:11px;color:#6b7280;display:flex;justify-content:space-between;"><span>SP: 74.0/133.0</span><span>53.8%</span></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;">Mobile App v2 Redesign</span><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span></div><div class="progress-bar"><div class="progress-fill" style="width:46.7%;background:#f59e0b"></div></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;"><span class="text-green">14 done</span><span class="text-blue">7 in prog</span><span class="text-gray">9 todo</span></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #1f2937;font-size:11px;color:#6b7280;display:flex;justify-content:space-between;"><span>SP: 76.0/152.0</span><span>46.7%</span></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;">User Authentication & SSO</span><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span></div><div class="progress-bar"><div class="progress-fill" style="width:30.4%;background:#f59e0b"></div></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;"><span class="text-green">7 done</span><span class="text-blue">7 in prog</span><span class="text-gray">9 todo</span></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #1f2937;font-size:11px;color:#6b7280;display:flex;justify-content:space-between;"><span>SP: 15.0/56.0</span><span>30.4%</span></div></div></div>
+
+<!-- Flow -->
+<h2 class="section">Flow Metrics</h2>
+<div class="grid grid-2">
+  <div class="card"><h3>Cumulative Flow Diagram</h3><div class="chart-container"><canvas id="flowChart"></canvas></div></div>
+  <div class="card"><h3>Cycle Time Distribution</h3><div class="chart-container"><canvas id="cycleChart"></canvas></div>
+    <div style="margin-top:6px;font-size:11px;color:#6b7280;">Median: 9.0d &bull; P85: 16.0d &bull; P95: 20.0d &bull; n=44</div></div>
+</div>
+
+<!-- Risks -->
+<h2 class="section">Risk Analysis</h2>
+<div class="grid grid-4" style="margin-bottom:14px">
+  <div class="kpi kpi-red"><div class="value">93</div><div class="label">Total Risks</div></div>
+  <div class="kpi kpi-red"><div class="value">36</div><div class="label">High Severity</div></div>
+  <div class="kpi kpi-amber"><div class="value">1</div><div class="label">Medium</div></div>
+  <div class="kpi" style="background:rgba(107,114,128,0.1);border:1px solid rgba(107,114,128,0.2)"><div class="value" style="color:#9ca3af">56</div><div class="label">Low</div></div>
+</div>
+<div class="card" style="margin-bottom:14px"><h3>Risk Categories</h3><div style="display:flex;gap:10px;flex-wrap:wrap;"><div style="display:flex;align-items:center;gap:6px;background:rgba(31,41,55,0.5);border-radius:8px;padding:8px 14px;font-size:13px;"><span style="text-transform:capitalize">overdue</span><span style="background:#374151;padding:2px 8px;border-radius:10px;font-size:11px;">33</span></div>
+<div style="display:flex;align-items:center;gap:6px;background:rgba(31,41,55,0.5);border-radius:8px;padding:8px 14px;font-size:13px;"><span style="text-transform:capitalize">blocked</span><span style="background:#374151;padding:2px 8px;border-radius:10px;font-size:11px;">3</span></div>
+<div style="display:flex;align-items:center;gap:6px;background:rgba(31,41,55,0.5);border-radius:8px;padding:8px 14px;font-size:13px;"><span style="text-transform:capitalize">no assignee</span><span style="background:#374151;padding:2px 8px;border-radius:10px;font-size:11px;">1</span></div>
+<div style="display:flex;align-items:center;gap:6px;background:rgba(31,41,55,0.5);border-radius:8px;padding:8px 14px;font-size:13px;"><span style="text-transform:capitalize">stale</span><span style="background:#374151;padding:2px 8px;border-radius:10px;font-size:11px;">56</span></div></div></div>
+<div class="card"><h3>Risk Register (Top 30)</h3>
+<table><thead><tr><th>Issue</th><th>Summary</th><th>Type</th><th class="text-center">Severity</th><th class="text-right">Days</th></tr></thead>
+<tbody><tr><td class="font-mono text-blue">SPARK-1</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Implement OAuth2 login flow with Google provider</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">162d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-2</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Add SAML SSO integration for enterprise customers</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">143d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-3</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Migrate batch ETL jobs to streaming architecture</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">45d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-5</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Implement Apache Kafka event ingestion pipeline</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">140d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-9</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Implement drag-and-drop dashboard layout editor</td><td style="text-transform:capitalize;font-size:12px">blocked</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">149d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-16</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Add dead letter queue handling for failed events</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">154d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-21</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Build offline-first data sync engine</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">134d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-22</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Create push notification preference center</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">44d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-28</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Add automated data reconciliation checks</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">145d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-32</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Build user profile settings page</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">51d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-33</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Create onboarding flow for new users</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">65d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-38</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Implement incremental data sync for large datasets</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">162d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-39</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Implement deep linking for shared content</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">134d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-45</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Create API key management for service accounts</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">50d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-47</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Chart tooltip overlap on mobile viewport</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">58d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-49</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Export PDF cuts off wide tables</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">59d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-51</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: SSO redirect loop on expired sessions</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">128d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-53</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Push notifications not received when app is backgrounded</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">52d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-55</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Schema evolution breaking downstream consumers</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">51d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-56</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Image upload fails on slow network connections</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">159d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-57</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Spike: Evaluate React Native vs Flutter migration</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">126d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-58</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: MFA code validation timing issue</td><td style="text-transform:capitalize;font-size:12px">blocked</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">60d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-61</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[Mobile] Additional work item #61</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">52d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-63</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Fix: Dashboard loading spinner stuck on slow connections</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">61d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-65</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[User] Additional work item #65</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">130d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-66</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Spike: Evaluate WebSocket for real-time data push</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">45d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-72</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[Data] Additional work item #72</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">130d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-73</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[User] Additional work item #73</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">44d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-74</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[User] Additional work item #74</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">48d</td></tr>
+<tr><td class="font-mono text-blue">SPARK-80</td><td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">[Mobile] Additional work item #80</td><td style="text-transform:capitalize;font-size:12px">overdue</td><td class="text-center"><span class="badge badge-high">high</span></td><td class="text-right">134d</td></tr></tbody></table></div>
+
+<!-- OKRs -->
+<h2 class="section">OKR Tracker</h2>
+<div class="grid grid-3" style="margin-bottom:14px">
+  <div class="kpi kpi-blue"><div class="value">4</div><div class="label">Objectives</div></div>
+  <div class="kpi kpi-purple"><div class="value">16</div><div class="label">Key Results</div></div>
+  <div class="kpi kpi-green"><div class="value">58%</div><div class="label">Avg Confidence</div></div>
+</div>
+<div class="card" style="margin-bottom:12px;"><div class="okr-card" style="border-color:#f59e0b"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="obj"><span style="color:#60a5fa;margin-right:8px;">O1</span>Accelerate Platform Adoption Across Enterprise Customers</div><div style="display:flex;align-items:center;gap:8px;"><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span><span style="color:#6b7280;font-size:13px;">48%</span></div></div><div class="progress-bar" style="margin:10px 0;height:4px;"><div class="progress-fill" style="width:48.0%;background:#f59e0b"></div></div><div class="kr-item"><div class="kr-num">1</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Increase monthly active enterprise accounts from 45 to 120 (55% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:55.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">55%</div></div>
+<div class="kr-item"><div class="kr-num">2</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Achieve Net Promoter Score (NPS) of 65+ across all customer segments (72% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:72.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">72%</div></div>
+<div class="kr-item"><div class="kr-num">3</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Reduce customer onboarding time from 14 days to 3 days (40% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:40.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">40%</div></div>
+<div class="kr-item"><div class="kr-num">4</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Launch self-serve trial flow with 25% conversion rate target (30% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:25.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">25%</div></div></div></div>
+<div class="card" style="margin-bottom:12px;"><div class="okr-card" style="border-color:#10b981"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="obj"><span style="color:#60a5fa;margin-right:8px;">O2</span>Achieve Engineering Excellence and Platform Reliability</div><div style="display:flex;align-items:center;gap:8px;"><span class="health" style="background:rgba(16,185,129,0.15);color:#34d399">Green</span><span style="color:#6b7280;font-size:13px;">94%</span></div></div><div class="progress-bar" style="margin:10px 0;height:4px;"><div class="progress-fill" style="width:93.7375%;background:#10b981"></div></div><div class="kr-item"><div class="kr-num">1</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Maintain 99.95% uptime SLA across all services (98% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:99.95%;background:#8b5cf6"></div></div></div><div class="kr-pct">100%</div></div>
+<div class="kr-item"><div class="kr-num">2</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Reduce average API response time to under 200ms (p95) (85% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:85.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">85%</div></div>
+<div class="kr-item"><div class="kr-num">3</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Achieve 90%+ unit test coverage across all microservices (76% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:90.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">90%</div></div>
+<div class="kr-item"><div class="kr-num">4</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Zero critical security vulnerabilities in production (100% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:100.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">100%</div></div></div></div>
+<div class="card" style="margin-bottom:12px;"><div class="okr-card" style="border-color:#f59e0b"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="obj"><span style="color:#60a5fa;margin-right:8px;">O3</span>Build Next-Generation Analytics and Insights Engine</div><div style="display:flex;align-items:center;gap:8px;"><span class="health" style="background:rgba(245,158,11,0.15);color:#fbbf24">Amber</span><span style="color:#6b7280;font-size:13px;">51%</span></div></div><div class="progress-bar" style="margin:10px 0;height:4px;"><div class="progress-fill" style="width:51.25%;background:#f59e0b"></div></div><div class="kr-item"><div class="kr-num">1</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Launch predictive sprint completion model with 85% accuracy (45% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:85.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">85%</div></div>
+<div class="kr-item"><div class="kr-num">2</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ship automated anomaly detection for cycle time regressions (60% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:60.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">60%</div></div>
+<div class="kr-item"><div class="kr-num">3</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Build natural language query interface for dashboard data (25% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:25.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">25%</div></div>
+<div class="kr-item"><div class="kr-num">4</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Deliver team health score algorithm validated by 10+ beta customers (35% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:35.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">35%</div></div></div></div>
+<div class="card" style="margin-bottom:12px;"><div class="okr-card" style="border-color:#ef4444"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="obj"><span style="color:#60a5fa;margin-right:8px;">O4</span>Expand Mobile Experience and Cross-Platform Reach</div><div style="display:flex;align-items:center;gap:8px;"><span class="health" style="background:rgba(239,68,68,0.15);color:#f87171">Red</span><span style="color:#6b7280;font-size:13px;">38%</span></div></div><div class="progress-bar" style="margin:10px 0;height:4px;"><div class="progress-fill" style="width:37.5%;background:#ef4444"></div></div><div class="kr-item"><div class="kr-num">1</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Launch iOS and Android apps with feature parity to web (70% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:70.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">70%</div></div>
+<div class="kr-item"><div class="kr-num">2</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Achieve 4.5+ star rating on both app stores (0% progress - not yet launched)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:0.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">0%</div></div>
+<div class="kr-item"><div class="kr-num">3</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Enable push notification alerts for sprint anomalies and blockers (50% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:50.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">50%</div></div>
+<div class="kr-item"><div class="kr-num">4</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Support offline dashboard viewing with background sync (30% progress)</div><div class="kr-bar"><div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:30.0%;background:#8b5cf6"></div></div></div><div class="kr-pct">30%</div></div></div></div>
+
+<!-- Labels -->
+<div class="card" style="margin-top:14px"><h3>Label Cloud</h3><div class="label-cloud"><span class="label-tag">infra (18)</span>
+<span class="label-tag">tech-debt (17)</span>
+<span class="label-tag">security (16)</span>
+<span class="label-tag">analytics (16)</span>
+<span class="label-tag">documentation (15)</span>
+<span class="label-tag">performance (15)</span>
+<span class="label-tag">database (15)</span>
+<span class="label-tag">mobile (14)</span>
+<span class="label-tag">auth (13)</span>
+<span class="label-tag">accessibility (13)</span>
+<span class="label-tag">ux (12)</span>
+<span class="label-tag">api (9)</span>
+<span class="label-tag">frontend (9)</span>
+<span class="label-tag">testing (6)</span>
+<span class="label-tag">backend (5)</span></div></div>
+
+<div style="text-align:center;margin-top:28px;padding:14px;color:#4b5563;font-size:11px;">HDP Spark Dashboard &bull; Generated from seed data</div>
+</div>
+
+<script>
+Chart.defaults.color='#9ca3af';
+Chart.defaults.plugins.legend.labels.boxWidth=12;
+Chart.defaults.plugins.legend.labels.padding=12;
+Chart.defaults.elements.arc.borderWidth=0;
+const C=['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316','#06b6d4'];
+const gs={color:'#1f293744'};
+const ng={display:false};
+
+new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:["Task", "Bug", "Story", "Sub-task", "Spike", "Epic"],datasets:[{data:[10, 23, 53, 8, 5, 1],backgroundColor:C}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+
+new Chart(document.getElementById('priorityChart'),{type:'bar',data:{labels:["High", "Medium", "Low", "Lowest", "Highest"],datasets:[{data:[18, 50, 22, 6, 4],backgroundColor:C,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:ng},scales:{x:{grid:gs},y:{grid:ng}}}});
+
+new Chart(document.getElementById('velocityChart'),{type:'line',data:{labels:["Sprint 2025-Q4-1", "Sprint 2025-Q4-2", "Sprint 2025-Q4-3", "Sprint 2026-Q1-1", "Sprint 2026-Q1-2"],datasets:[{label:'Velocity (SP)',data:[67.0, 32.0, 14.0, 36.0, 50.0],borderColor:'#3b82f6',backgroundColor:'#3b82f640',fill:true,tension:0.3},{label:'Issues Done',data:[14, 9, 8, 4, 9],borderColor:'#10b981',borderDash:[5,5],tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:gs},y:{grid:gs}}}});
+
+new Chart(document.getElementById('throughputChart'),{type:'bar',data:{labels:["2025-09-29", "2025-10-06", "2025-10-13", "2025-10-20", "2025-10-27", "2025-11-03", "2025-11-10", "2026-01-12", "2026-01-19", "2026-01-26", "2026-02-02"],datasets:[{label:'Resolved',data:[8, 3, 5, 3, 6, 3, 3, 4, 5, 2, 2],backgroundColor:'#8b5cf680',borderColor:'#8b5cf6',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:ng},scales:{x:{grid:gs,ticks:{maxRotation:45}},y:{grid:gs}}}});
+
+new Chart(document.getElementById('completionChart'),{type:'bar',data:{labels:["Sprint 2025-Q4-1", "Sprint 2025-Q4-2", "Sprint 2025-Q4-3", "Sprint 2026-Q1-1", "Sprint 2026-Q1-2"],datasets:[{label:'Completion %',data:[58.3, 60.0, 38.1, 26.7, 36.0],backgroundColor:'#10b98180',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:ng},scales:{x:{grid:gs},y:{grid:gs,max:100}}}});
+
+new Chart(document.getElementById('plannedVsCompChart'),{type:'bar',data:{labels:["Sprint 2025-Q4-1", "Sprint 2025-Q4-2", "Sprint 2025-Q4-3", "Sprint 2026-Q1-1", "Sprint 2026-Q1-2"],datasets:[{label:'Planned',data:[106.0, 60.0, 71.0, 83.0, 124.0],backgroundColor:'#6366f180',borderRadius:4},{label:'Completed',data:[67.0, 32.0, 14.0, 36.0, 50.0],backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:gs},y:{grid:gs}}}});
+
+new Chart(document.getElementById('teamWorkloadChart'),{type:'bar',data:{labels:["Alice Chen", "Bob Martinez", "Carol Okonkwo", "David Kim", "Eva Petrov", "Frank Johnson", "Grace Liu", "Hassan Ali"],datasets:[{label:'Assigned',data:[14, 14, 8, 7, 18, 15, 11, 12],backgroundColor:'#6366f1',borderRadius:4},{label:'Completed',data:[7, 9, 5, 2, 7, 4, 7, 3],backgroundColor:'#10b981',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',scales:{x:{grid:gs},y:{grid:ng}}}});
+
+new Chart(document.getElementById('teamSPChart'),{type:'bar',data:{labels:["Alice Chen", "Bob Martinez", "Carol Okonkwo", "David Kim", "Eva Petrov", "Frank Johnson", "Grace Liu", "Hassan Ali"],datasets:[{label:'SP',data:[24.0, 34.0, 22.0, 4.0, 54.0, 22.0, 23.0, 16.0],backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:ng},scales:{x:{grid:gs},y:{grid:gs}}}});
+
+new Chart(document.getElementById('epicChart'),{type:'bar',data:{labels:["Dashboard & Reporting Engine", "Data Pipeline Modernization", "Mobile App v2 Redesign", "User Authentication & SSO"],datasets:[{label:'Progress %',data:[42.9, 53.8, 46.7, 30.4],backgroundColor:C,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:ng},scales:{x:{grid:gs,max:100},y:{grid:ng}}}});
+
+new Chart(document.getElementById('flowChart'),{type:'line',data:{labels:["2025-09-26", "2025-09-27", "2025-09-28", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-04", "2025-10-10", "2025-10-11", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-18", "2025-10-24", "2025-10-25", "2025-10-26", "2025-10-27", "2025-10-28", "2025-10-30", "2025-10-31", "2025-11-01", "2025-12-31", "2026-01-01", "2026-01-04", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-17", "2026-01-18", "2026-01-19", "2026-01-20", "2026-01-22"],datasets:[{label:'Done',data:[2, 4, 5, 6, 8, 9, 12, 13, 14, 16, 16, 17, 18, 19, 20, 21, 23, 24, 27, 28, 29, 30, 30, 30, 31, 31, 32, 32, 32, 32, 35, 38, 39, 40, 40, 42, 42, 44, 44],borderColor:'#10b981',backgroundColor:'#10b98130',fill:true,tension:0.3},{label:'In Progress',data:[1, 2, 2, 2, 3, 3, 3, 4, 7, 7, 8, 9, 10, 10, 11, 11, 11, 12, 13, 15, 15, 16, 17, 18, 19, 20, 20, 22, 24, 26, 26, 26, 27, 27, 29, 30, 31, 31, 31],borderColor:'#3b82f6',backgroundColor:'#3b82f630',fill:true,tension:0.3},{label:'To Do',data:[0, 0, 0, 0, 0, 0, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 5, 6, 8, 8, 8, 8, 9, 10, 10, 11, 11, 11, 11, 12, 14, 18, 19, 19, 21, 22, 22, 22, 25],borderColor:'#6366f1',backgroundColor:'#6366f130',fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{grid:gs,ticks:{maxTicksLimit:12}},y:{grid:gs,stacked:true}}}});
+
+const ct=[1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0, 5.0, 5.0, 6.0, 7.0, 7.0, 7.0, 7.0, 8.0, 8.0, 8.0, 8.0, 9.0, 9.0, 10.0, 10.0, 10.0, 10.0, 11.0, 11.0, 12.0, 13.0, 13.0, 14.0, 14.0, 15.0, 15.0, 16.0, 17.0, 18.0, 18.0, 20.0, 21.0, 22.0];
+const bs=Math.max(1,Math.ceil(Math.max(...ct)/10));
+const bk={};ct.forEach(v=>{const b=Math.floor(v/bs)*bs;const l=b+'-'+(b+bs)+'d';bk[l]=(bk[l]||0)+1});
+new Chart(document.getElementById('cycleChart'),{type:'bar',data:{labels:Object.keys(bk),datasets:[{label:'Issues',data:Object.values(bk),backgroundColor:'#8b5cf6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:ng},scales:{x:{grid:gs},y:{grid:gs}}}});
+</script>
+</body>
+</html>
