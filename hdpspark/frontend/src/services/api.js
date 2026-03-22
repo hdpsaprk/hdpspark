@@ -19,6 +19,16 @@ export async function getUploadStatus() {
   return data
 }
 
+export async function connectJira(payload) {
+  const { data } = await api.post('/jira/connect', payload)
+  return data
+}
+
+export async function listJiraProjects(payload) {
+  const { data } = await api.post('/jira/projects', payload)
+  return data
+}
+
 export async function parseConfluence(payload) {
   const { data } = await api.post('/confluence/parse', payload)
   return data

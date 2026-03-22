@@ -12,6 +12,7 @@ from app.api.upload import router as upload_router
 from app.api.dashboard import router as dashboard_router
 from app.api.confluence import router as confluence_router
 from app.api.analytics import router as analytics_router
+from app.api.jira_connect import router as jira_connect_router
 
 app = FastAPI(
     title="HDP Spark",
@@ -31,6 +32,7 @@ app.include_router(upload_router, prefix="/api/upload", tags=["Upload"])
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(confluence_router, prefix="/api/confluence", tags=["Confluence"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(jira_connect_router, prefix="/api/jira", tags=["Jira API"])
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
 REPORT_PATH = SEED_DIR / "dashboard_report.html"

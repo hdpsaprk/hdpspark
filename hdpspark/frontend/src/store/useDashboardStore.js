@@ -29,6 +29,30 @@ const useDashboardStore = create((set, get) => ({
     }
   },
 
+  connectJira: async (payload) => {
+    set({ loading: true, error: null })
+    try {
+      const dataset = await api.connectJira(payload)
+      set({ dataset, loading: false })
+      return dataset
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Jira connection failed'
+      set({ error: msg, loading: false })
+      throw err
+    }
+  },
+
+  listJiraProjects: async (payload) => {
+    try {
+      const result = await api.listJiraProjects(payload)
+      return result.projects
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Failed to list projects'
+      set({ error: msg })
+      return []
+    }
+  },
+
   parseConfluence: async (payload) => {
     set({ loading: true, error: null })
     try {

@@ -65,6 +65,17 @@ class JiraDataset(BaseModel):
     total_issues: int = 0
 
 
+# --- Jira API Connect ---
+
+class JiraConnectInput(BaseModel):
+    site_url: str  # e.g. "yourcompany.atlassian.net"
+    email: str
+    api_token: str
+    jql: str = ""  # empty = all issues
+    project_key: str = ""  # if set, adds "project = KEY" to JQL
+    max_results: int = 500
+
+
 # --- Confluence Models ---
 
 class ConfluenceInput(BaseModel):

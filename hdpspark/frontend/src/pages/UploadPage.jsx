@@ -1,14 +1,24 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, FileSpreadsheet, Globe, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Upload, FileSpreadsheet, Globe, Sparkles, AlertCircle, CheckCircle2, Cloud, Key, Search } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import useDashboardStore from '../store/useDashboardStore'
 
 export default function UploadPage() {
-  const { loading, error, dataset, confluenceResult, uploadJiraFile, parseConfluence, generateDashboard, clearError } = useDashboardStore()
+  const { loading, error, dataset, confluenceResult, uploadJiraFile, connectJira, listJiraProjects, parseConfluence, generateDashboard, clearError } = useDashboardStore()
   const [confluenceUrl, setConfluenceUrl] = useState('')
   const [confluenceText, setConfluenceText] = useState('')
   const [inputMode, setInputMode] = useState('url') // url | text
+  const [jiraSource, setJiraSource] = useState('api') // api | excel
+
+  // Jira API connect state
+  const [siteUrl, setSiteUrl] = useState('')
+  const [email, setEmail] = useState('')
+  const [apiToken, setApiToken] = useState('')
+  const [projectKey, setProjectKey] = useState('')
+  const [jql, setJql] = useState('')
+  const [projects, setProjects] = useState([])
+  const [loadingProjects, setLoadingProjects] = useState(false)
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -23,6 +33,26 @@ export default function UploadPage() {
       }
     },
   })
+
+  const handleFetchProjects = async () => {
+    if (!siteUrl || !email || !apiToken) return
+    setLoadingProjects(true)
+    clearError()
+    const result = await listJiraProjects({ site_url: siteUrl, email, api_token: apiToken })
+    setProjects(result || [])
+    setLoadingProjects(false)
+  }
+
+  const handleJiraConnect = async () => {
+    clearError()
+    await connectJira({
+      site_url: siteUrl,
+      email,
+      api_token: apiToken,
+      project_key: projectKey,
+      jql,
+    })
+  }
 
   const handleConfluenceParse = async () => {
     clearError()
@@ -57,8 +87,8 @@ export default function UploadPage() {
           Into Insights
         </h2>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          Upload your Jira Excel export and optionally add Confluence content to generate
-          comprehensive dashboards with KPIs, OKRs, and team analytics.
+          Connect to Jira directly or upload an Excel export, then optionally add Confluence content
+          for comprehensive dashboards with KPIs, OKRs, and team analytics.
         </p>
       </div>
 
@@ -71,31 +101,146 @@ export default function UploadPage() {
       )}
 
       <div className="grid gap-6">
-        {/* Jira Upload */}
+        {/* Jira Data Source */}
         <div className="card">
           <div className="flex items-center gap-3 mb-4">
             <FileSpreadsheet className="w-5 h-5 text-spark-400" />
-            <h3 className="text-lg font-semibold">Jira Excel Upload</h3>
+            <h3 className="text-lg font-semibold">Jira Data</h3>
             {dataset && <CheckCircle2 className="w-5 h-5 text-emerald-400 ml-auto" />}
           </div>
 
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-              isDragActive ? 'border-spark-400 bg-spark-400/5' : 'border-gray-700 hover:border-gray-500'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="w-10 h-10 text-gray-500 mx-auto mb-3" />
-            {isDragActive ? (
-              <p className="text-spark-300">Drop your Excel file here...</p>
-            ) : (
-              <>
-                <p className="text-gray-300 mb-1">Drag & drop your Jira Excel export here</p>
-                <p className="text-gray-500 text-sm">or click to browse (.xlsx files)</p>
-              </>
-            )}
+          {/* Source toggle */}
+          <div className="flex gap-2 mb-5">
+            <button
+              onClick={() => setJiraSource('api')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                jiraSource === 'api' ? 'bg-spark-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <Cloud className="w-4 h-4" />
+              Connect to Jira
+            </button>
+            <button
+              onClick={() => setJiraSource('excel')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                jiraSource === 'excel' ? 'bg-spark-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              Upload Excel
+            </button>
           </div>
+
+          {jiraSource === 'api' ? (
+            /* Jira API Connect */
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <p className="text-xs text-blue-300">
+                  <Key className="w-3 h-3 inline mr-1" />
+                  No admin access needed. Generate a personal API token at{' '}
+                  <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-200">
+                    id.atlassian.com
+                  </a>
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                <input
+                  type="text"
+                  value={siteUrl}
+                  onChange={(e) => setSiteUrl(e.target.value)}
+                  placeholder="yourcompany.atlassian.net"
+                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-spark-500 transition-colors"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@company.com"
+                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-spark-500 transition-colors"
+                />
+                <input
+                  type="password"
+                  value={apiToken}
+                  onChange={(e) => setApiToken(e.target.value)}
+                  placeholder="API Token"
+                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-spark-500 transition-colors"
+                />
+              </div>
+
+              {/* Project picker */}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleFetchProjects}
+                  disabled={!siteUrl || !email || !apiToken || loadingProjects}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-40 rounded-lg transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                  {loadingProjects ? 'Loading...' : 'Find Projects'}
+                </button>
+                {projects.length > 0 && (
+                  <select
+                    value={projectKey}
+                    onChange={(e) => setProjectKey(e.target.value)}
+                    className="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-spark-500"
+                  >
+                    <option value="">All projects</option>
+                    {projects.map((p) => (
+                      <option key={p.key} value={p.key}>{p.key} - {p.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Optional JQL */}
+              <input
+                type="text"
+                value={jql}
+                onChange={(e) => setJql(e.target.value)}
+                placeholder="Custom JQL (optional) e.g. sprint in openSprints()"
+                className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-spark-500 transition-colors"
+              />
+
+              <button
+                onClick={handleJiraConnect}
+                disabled={loading || !siteUrl || !email || !apiToken}
+                className="w-full py-2.5 text-sm font-medium bg-spark-600 hover:bg-spark-500 disabled:opacity-40 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    Fetching Issues...
+                  </>
+                ) : (
+                  <>
+                    <Cloud className="w-4 h-4" />
+                    Connect & Fetch Issues
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            /* Excel Upload */
+            <>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                  isDragActive ? 'border-spark-400 bg-spark-400/5' : 'border-gray-700 hover:border-gray-500'
+                }`}
+              >
+                <input {...getInputProps()} />
+                <Upload className="w-10 h-10 text-gray-500 mx-auto mb-3" />
+                {isDragActive ? (
+                  <p className="text-spark-300">Drop your Excel file here...</p>
+                ) : (
+                  <>
+                    <p className="text-gray-300 mb-1">Drag & drop your Jira Excel export here</p>
+                    <p className="text-gray-500 text-sm">or click to browse (.xlsx files)</p>
+                  </>
+                )}
+              </div>
+            </>
+          )}
 
           {dataset && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 grid grid-cols-3 gap-4">
