@@ -1,5 +1,6 @@
 """HDP Spark - Jira & Confluence Dashboard Framework"""
 
+import logging
 import os
 from pathlib import Path
 
@@ -14,15 +15,20 @@ from app.api.confluence import router as confluence_router
 from app.api.analytics import router as analytics_router
 from app.api.jira_connect import router as jira_connect_router
 
+log_level = os.getenv("LOG_LEVEL", "info").upper()
+logging.basicConfig(level=log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("hdpspark")
+
 app = FastAPI(
     title="HDP Spark",
     description="On-demand dashboards from Jira exports & Confluence pages",
     version="1.0.0",
 )
 
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +46,7 @@ REPORT_PATH = SEED_DIR / "dashboard_report.html"
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "hdpspark"}
+    return {"status": "healthy", "service": "hdpspark", "version": "1.0.0"}
 
 
 @app.get("/report", response_class=HTMLResponse)

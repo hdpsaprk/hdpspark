@@ -1,0 +1,83 @@
+name: CI - Build & Test HDP Spark
+
+on:
+  push:
+    branches: [main, master, claude/jira-confluence-dashboard-mYKhN]
+    paths:
+      - 'hdpspark/backend/**'
+      - 'hdpspark/frontend/**'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'hdpspark/backend/**'
+      - 'hdpspark/frontend/**'
+  workflow_dispatch:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hdpspark/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt gunicorn
+
+      - name: Verify app imports
+        run: python -c "from app.main import app; print('Backend OK')"
+
+      - name: Start server and run tests
+        run: |
+          python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 3
+          curl -f http://localhost:8000/api/health
+          python seed/run_tests.py http://localhost:8000
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hdpspark/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: hdpspark/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t hdpspark-backend hdpspark/backend
+
+      - name: Build frontend image
+        run: docker build -t hdpspark-frontend hdpspark/frontend
+
+      - name: Verify backend container starts
+        run: |
+          docker run -d --name test-backend -p 8000:8000 hdpspark-backend
+          sleep 5
+          curl -f http://localhost:8000/api/health
+          docker stop test-backend
