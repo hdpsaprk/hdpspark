@@ -62,8 +62,17 @@ def _detect_columns(df: pd.DataFrame) -> dict[str, str]:
     return mapping
 
 
+def _is_na(val: Any) -> bool:
+    if val is None:
+        return True
+    try:
+        return pd.isna(val)
+    except (ValueError, TypeError):
+        return False
+
+
 def _parse_date(val: Any) -> date | None:
-    if val is None or (isinstance(val, float) and pd.isna(val)):
+    if _is_na(val):
         return None
     if isinstance(val, (datetime, date)):
         return val if isinstance(val, date) else val.date()
@@ -74,7 +83,7 @@ def _parse_date(val: Any) -> date | None:
 
 
 def _parse_list(val: Any) -> list[str]:
-    if val is None or (isinstance(val, float) and pd.isna(val)):
+    if _is_na(val):
         return []
     s = str(val)
     if "," in s:
@@ -83,7 +92,7 @@ def _parse_list(val: Any) -> list[str]:
 
 
 def _parse_float(val: Any) -> float:
-    if val is None or (isinstance(val, float) and pd.isna(val)):
+    if _is_na(val):
         return 0.0
     try:
         return float(val)
@@ -92,7 +101,7 @@ def _parse_float(val: Any) -> float:
 
 
 def _safe_str(val: Any) -> str:
-    if val is None or (isinstance(val, float) and pd.isna(val)):
+    if _is_na(val):
         return ""
     return str(val).strip()
 

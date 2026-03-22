@@ -1,0 +1,72 @@
+# Q1 2026 Product OKRs - Project Spark
+
+## Company Mission
+Deliver a world-class project analytics platform that helps engineering teams
+ship better software faster with data-driven insights.
+
+---
+
+## Objective 1: Accelerate Platform Adoption Across Enterprise Customers
+Drive adoption of the Spark analytics platform to achieve market leadership
+in the engineering intelligence space.
+
+- KR 1: Increase monthly active enterprise accounts from 45 to 120 (55% progress)
+- KR 2: Achieve Net Promoter Score (NPS) of 65+ across all customer segments (72% progress)
+- KR 3: Reduce customer onboarding time from 14 days to 3 days (40% progress)
+- KR 4: Launch self-serve trial flow with 25% conversion rate target (30% progress)
+
+## Objective 2: Achieve Engineering Excellence and Platform Reliability
+Ensure the platform is robust, performant, and delightful to use with
+world-class engineering practices.
+
+- KR 1: Maintain 99.95% uptime SLA across all services (98% progress)
+- KR 2: Reduce average API response time to under 200ms (p95) (85% progress)
+- KR 3: Achieve 90%+ unit test coverage across all microservices (76% progress)
+- KR 4: Zero critical security vulnerabilities in production (100% progress)
+
+## Objective 3: Build Next-Generation Analytics and Insights Engine
+Create an AI-powered analytics engine that surfaces actionable insights
+automatically from project data.
+
+- KR 1: Launch predictive sprint completion model with 85% accuracy (45% progress)
+- KR 2: Ship automated anomaly detection for cycle time regressions (60% progress)
+- KR 3: Build natural language query interface for dashboard data (25% progress)
+- KR 4: Deliver team health score algorithm validated by 10+ beta customers (35% progress)
+
+## Objective 4: Expand Mobile Experience and Cross-Platform Reach
+Deliver a seamless mobile experience that enables managers and leads to
+stay informed on the go.
+
+- KR 1: Launch iOS and Android apps with feature parity to web (70% progress)
+- KR 2: Achieve 4.5+ star rating on both app stores (0% progress - not yet launched)
+- KR 3: Enable push notification alerts for sprint anomalies and blockers (50% progress)
+- KR 4: Support offline dashboard viewing with background sync (30% progress)
+
+---
+
+## Team Health Indicators
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Engineering Velocity | Green | Sprint velocity trending up 15% QoQ |
+| Code Quality | Amber | Test coverage at 76%, target is 90% |
+| Customer Satisfaction | Green | NPS at 68, exceeding target |
+| Platform Reliability | Green | 99.97% uptime last 30 days |
+| Security Posture | Green | SOC 2 Type II audit completed |
+| Team Morale | Amber | Survey shows concern about on-call load |
+
+## Key Risks and Mitigations
+
+- **Risk**: Mobile app launch timeline slipping due to React Native performance issues
+  - Mitigation: Evaluating Flutter as alternative; POC in progress
+- **Risk**: Data pipeline modernization creating temporary data inconsistencies
+  - Mitigation: Running old and new pipelines in parallel with reconciliation checks
+- **Risk**: Single point of failure in authentication service
+  - Mitigation: Active-active HA deployment planned for Sprint Q1-2
+
+## Dependencies
+
+- SSO integration depends on enterprise customer IT team availability
+- Mobile app store review process (2-3 week lead time)
+- Kafka cluster provisioning by DevOps team (in progress)
+- Design system v2 delivery from UX team (75% complete)

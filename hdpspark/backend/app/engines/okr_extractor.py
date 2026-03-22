@@ -33,10 +33,29 @@ def extract_okrs(text: str) -> list[OKR]:
     current_objective: Optional[str] = None
     current_krs: list[KeyResult] = []
 
+    # Section headers that signal end of OKR content
+    STOP_SECTIONS = {
+        "risk", "risks", "mitigation", "dependencies", "dependency",
+        "team health", "health indicators", "notes", "appendix",
+        "action items", "blockers", "timeline",
+    }
+
     for line in lines:
         line = line.strip()
         if not line:
             continue
+
+        # Detect non-OKR section headers (## Key Risks, ## Dependencies, etc.)
+        header_match = re.match(r"^#{1,3}\s+(.+)", line)
+        if header_match:
+            header_text = header_match.group(1).strip().lower()
+            if any(stop in header_text for stop in STOP_SECTIONS):
+                # Save current OKR and stop collecting
+                if current_objective:
+                    okrs.append(_build_okr(current_objective, current_krs))
+                    current_objective = None
+                    current_krs = []
+                continue
 
         # Check for objective
         obj_match = _match_patterns(line, OBJECTIVE_PATTERNS)
