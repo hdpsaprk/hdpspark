@@ -3,8 +3,6 @@ name: Deploy DashFrame to GitHub Pages
 on:
   push:
     branches: [main, master, claude/jira-confluence-dashboard-mYKhN]
-    paths:
-      - 'hdpspark/dashframe/**'
   workflow_dispatch:
 
 permissions:
@@ -35,6 +33,9 @@ jobs:
       - name: Build
         run: npx vite build
         working-directory: hdpspark/dashframe
+
+      - name: Copy iPhone preview to dist
+        run: cp hdpspark/dashframe/iphone-preview.html hdpspark/dashframe/dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
