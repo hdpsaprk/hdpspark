@@ -15,6 +15,7 @@ interface Props {
   onConfluenceChange: (val: string) => void;
   onGenerate: () => void;
   onClear: () => void;
+  onDemo: () => void;
 }
 
 export const InputForm: React.FC<Props> = ({
@@ -28,6 +29,7 @@ export const InputForm: React.FC<Props> = ({
   onConfluenceChange,
   onGenerate,
   onClear,
+  onDemo,
 }) => {
   const rows = parsedFile?.sheets[activeSheet] ?? [];
   const rowCount = rows.length;
@@ -51,6 +53,9 @@ export const InputForm: React.FC<Props> = ({
       <div className="flex items-center gap-4 mt-6 flex-wrap">
         <Button onClick={onGenerate} disabled={!canGenerate}>
           Generate Dashboard →
+        </Button>
+        <Button variant="secondary" onClick={onDemo}>
+          Try Demo
         </Button>
         {parsedFile && (
           <Button variant="secondary" onClick={onClear}>

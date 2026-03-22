@@ -4,6 +4,7 @@ import { useSheetJS } from './hooks/useSheetJS';
 import { useLoadingMessages } from './hooks/useLoadingMessages';
 import { parseExcel } from './lib/parseExcel';
 import { callClaude } from './lib/callClaude';
+import { DEMO_DASHBOARD } from './lib/demoData';
 import { Header } from './components/layout/Header';
 import { PageShell } from './components/layout/PageShell';
 import { InputForm } from './components/input/InputForm';
@@ -110,6 +111,7 @@ export default function App() {
             onConfluenceChange={setConfluence}
             onGenerate={handleGenerate}
             onClear={handleClear}
+            onDemo={() => setDashboard(DEMO_DASHBOARD)}
           />
         )}
       </PageShell>
