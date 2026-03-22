@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DashFrame — iPhone Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Lora:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: system-ui;
+  }
+
+  .phone-frame {
+    width: 393px;
+    height: 852px;
+    border-radius: 47px;
+    background: #000;
+    padding: 12px;
+    box-shadow:
+      0 0 0 2px #333,
+      0 40px 80px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 38px;
+    overflow: hidden;
+    overflow-y: auto;
+    background: #FAF9F5;
+  }
+
+  .phone-screen::-webkit-scrollbar { width: 0; }
+
+  /* ——— App content inside phone ——— */
+
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E8E6DC;
+    padding: 52px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .logo .a { color: #D97757; }
+  .logo .b { color: #B0AEA5; }
+
+  .pills { display: flex; gap: 4px; }
+  .pill {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #E8E6DC;
+    color: #B0AEA5;
+  }
+  .pill.active {
+    background: rgba(217,119,87,0.07);
+    border-color: #D97757;
+    color: #D97757;
+  }
+  .pill.done {
+    border-color: #788C5D;
+    color: #788C5D;
+  }
+
+  .content { padding: 14px 14px 24px; }
+
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #141413;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    color: #6B5E54;
+    margin-top: 2px;
+  }
+
+  .tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(217,119,87,0.07);
+    color: #D97757;
+    border: 1px solid rgba(217,119,87,0.25);
+  }
+
+  .btn-secondary {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid #E8E6DC;
+    background: transparent;
+    color: #6B5E54;
+    white-space: nowrap;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  .section-label span {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #B0AEA5;
+    white-space: nowrap;
+  }
+  .section-label .line {
+    flex: 1;
+    height: 1px;
+    background: #E8E6DC;
+  }
+
+  /* KPIs */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .kpi-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E6DC;
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .kpi-card .kpi-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #B0AEA5;
+  }
+
+  .kpi-card .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+    color: #141413;
+    margin-top: 2px;
+  }
+
+  .kpi-card .kpi-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #6B5E54;
+    margin-top: 1px;
+  }
+
+  .kpi-card .kpi-trend {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .kpi-trend.up { color: #788C5D; }
+  .kpi-trend.down { color: #DC2626; }
+
+  /* Blockers */
+  .blockers-grid { display: flex; flex-direction: column; gap: 8px; }
+
+  .blocker {
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+  }
+  .blocker.red { background: #FEF2F2; border: 1px solid #FECACA; }
+  .blocker.amber { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .blocker.green { background: #F0FDF4; border: 1px solid #BBF7D0; }
+
+  .blocker .b-icon { font-size: 12px; flex-shrink: 0; }
+  .blocker .b-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .blocker.red .b-label { color: #DC2626; }
+  .blocker.amber .b-label { color: #D97706; }
+  .blocker.green .b-label { color: #788C5D; }
+
+  .blocker .b-text {
+    font-family: 'Lora', serif;
+    font-size: 10px;
+    color: #6B5E54;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  /* Charts placeholder */
+  .chart-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E6DC;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .chart-card h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #141413;
+  }
+  .chart-card .chart-desc {
+    font-family: 'Lora', serif;
+    font-size: 9px;
+    color: #B0AEA5;
+    margin-top: 1px;
+  }
+  .chart-placeholder {
+    height: 120px;
+    margin-top: 8px;
+    border-radius: 6px;
+    background: #F3F0E8;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px;
+    gap: 6px;
+  }
+  .bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* Insights */
+  .insight {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .insight .i-icon { font-size: 12px; flex-shrink: 0; }
+  .insight .i-text {
+    font-family: 'Lora', serif;
+    font-size: 10px;
+    color: #6B5E54;
+    line-height: 1.5;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+  th {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #B0AEA5;
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 1px solid #E8E6DC;
+  }
+  td {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #141413;
+    padding: 4px 6px;
+    border-bottom: 1px solid #F3F0E8;
+  }
+
+  .label-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #141413;
+    text-align: center;
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo"><span class="a">DASH</span><span class="b">FRAME</span></div>
+      <div class="pills">
+        <div class="pill done">1·INPUT</div>
+        <div class="pill done">2·ANALYZE</div>
+        <div class="pill active">3·DASHBOARD</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- Title -->
+      <div class="title-row">
+        <div>
+          <h1>Sprint Health Dashboard</h1>
+          <div class="subtitle">AI-generated from Jira export + Confluence context</div>
+          <div class="tags">
+            <span class="tag">Sprint 24</span>
+            <span class="tag">Q1-2026</span>
+            <span class="tag">Team Alpha</span>
+          </div>
+        </div>
+        <button class="btn-secondary">↩ New</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="section-label"><span>Key Metrics</span><div class="line"></div></div>
+      <div class="kpi-grid">
+        <div class="kpi-card" style="border-top: 2px solid #D97757;">
+          <div class="kpi-label">Velocity</div>
+          <div class="kpi-value">47</div>
+          <div class="kpi-sub">story points</div>
+          <div class="kpi-trend up">▲ 12% vs last sprint</div>
+        </div>
+        <div class="kpi-card" style="border-top: 2px solid #6A9BCC;">
+          <div class="kpi-label">Completion</div>
+          <div class="kpi-value">83%</div>
+          <div class="kpi-sub">28 of 34 stories</div>
+          <div class="kpi-trend up">▲ On track</div>
+        </div>
+        <div class="kpi-card" style="border-top: 2px solid #788C5D;">
+          <div class="kpi-label">Avg Cycle Time</div>
+          <div class="kpi-value">3.2d</div>
+          <div class="kpi-sub">from In Progress → Done</div>
+          <div class="kpi-trend down">▼ 0.5d slower</div>
+        </div>
+        <div class="kpi-card" style="border-top: 2px solid #9B7DB8;">
+          <div class="kpi-label">Blockers</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-sub">active blockers</div>
+          <div class="kpi-trend down">▼ 2 new this week</div>
+        </div>
+      </div>
+
+      <!-- Blockers -->
+      <div class="section-label"><span>Blockers & Risks</span><div class="line"></div></div>
+      <div class="blockers-grid">
+        <div class="blocker red">
+          <span class="b-icon">🔴</span>
+          <div>
+            <div class="b-label">API Dependency Blocked</div>
+            <div class="b-text">Auth service v3 migration blocking 3 stories. ETA from Platform team: March 25</div>
+          </div>
+        </div>
+        <div class="blocker amber">
+          <span class="b-icon">🟡</span>
+          <div>
+            <div class="b-label">Design Review Pending</div>
+            <div class="b-text">Mobile checkout redesign awaiting final sign-off from Design Lead</div>
+          </div>
+        </div>
+        <div class="blocker green">
+          <span class="b-icon">🟢</span>
+          <div>
+            <div class="b-label">Resolved: CI Pipeline</div>
+            <div class="b-text">Flaky test suite stabilized after infrastructure upgrade on March 18</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="section-label"><span>Charts</span><div class="line"></div></div>
+      <div class="chart-card">
+        <h3>Story Points by Status</h3>
+        <div class="chart-desc">Distribution across workflow stages</div>
+        <div class="chart-placeholder">
+          <div class="bar" style="height: 90%; background: #D97757;"></div>
+          <div class="bar" style="height: 55%; background: #6A9BCC;"></div>
+          <div class="bar" style="height: 30%; background: #788C5D;"></div>
+          <div class="bar" style="height: 20%; background: #9B7DB8;"></div>
+          <div class="bar" style="height: 10%; background: #B0AEA5;"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Burndown Trend</h3>
+        <div class="chart-desc">Remaining work over sprint duration</div>
+        <div class="chart-placeholder" style="align-items: center; justify-content: center;">
+          <svg width="90%" height="80" viewBox="0 0 300 80">
+            <polyline points="0,5 50,12 100,22 150,35 200,50 250,62 300,72"
+              fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="0,5 50,15 100,25 150,38 200,48 250,58 300,75"
+              fill="none" stroke="#E8E6DC" stroke-width="1" stroke-dasharray="4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="section-label"><span>Insights</span><div class="line"></div></div>
+      <div class="insight">
+        <span class="i-icon">📈</span>
+        <div class="i-text">Velocity trending upward — team delivered <b>12% more</b> story points than the sprint average</div>
+      </div>
+      <div class="insight">
+        <span class="i-icon">⚠️</span>
+        <div class="i-text">Auth service dependency is the <b>single largest risk</b> — consider parallel workaround using feature flags</div>
+      </div>
+      <div class="insight">
+        <span class="i-icon">💡</span>
+        <div class="i-text">Cycle time increased due to <b>code review bottleneck</b> — 60% of PRs waited &gt;24h for review</div>
+      </div>
+
+      <!-- Table -->
+      <div class="section-label"><span>Summary Table</span><div class="line"></div></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Assignee</th>
+            <th>Done</th>
+            <th>In Progress</th>
+            <th>Blocked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Alice</td><td>8</td><td>2</td><td>0</td></tr>
+          <tr><td>Bob</td><td>6</td><td>1</td><td>2</td></tr>
+          <tr><td>Carol</td><td>9</td><td>3</td><td>0</td></tr>
+          <tr><td>Dave</td><td>5</td><td>0</td><td>2</td></tr>
+        </tbody>
+      </table>
+
+    </div><!-- /content -->
+  </div><!-- /phone-screen -->
+</div><!-- /phone-frame -->
+
+<div style="color: #666; margin-left: 40px; max-width: 200px;">
+  <div class="label-text" style="color: #999; margin-bottom: 12px;">iPhone 14 Pro · 393×852</div>
+</div>
+
+</body>
+</html>
