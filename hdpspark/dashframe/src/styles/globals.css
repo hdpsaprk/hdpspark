@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Lora:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,9 +7,9 @@
 body {
   margin: 0;
   padding: 0;
-  background: #0A0E1A;
-  color: #F1F5F9;
-  font-family: 'Syne', sans-serif;
+  background: #FAF9F5;
+  color: #141413;
+  font-family: 'Lora', Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,12 +20,12 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0E1A;
+  background: #FAF9F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1F2D45;
+  background: #D4D0C4;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2D4A6B;
+  background: #B0AEA5;
 }

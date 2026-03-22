@@ -12,21 +12,21 @@ export const StepPill: React.FC<Props> = ({ number, label, currentStep }) => {
   const isDone = currentStep > number;
 
   let bg = 'transparent';
-  let border = '#1F2D45';
-  let color = '#475569';
+  let border = '#E8E6DC';
+  let color = '#B0AEA5';
 
   if (isActive) {
-    bg = '#1E3A5F';
-    border = '#3B82F6';
-    color = '#3B82F6';
+    bg = '#D9775712';
+    border = '#D97757';
+    color = '#D97757';
   } else if (isDone) {
-    border = '#10B981';
-    color = '#10B981';
+    border = '#788C5D';
+    color = '#788C5D';
   }
 
   return (
     <span
-      className="inline-flex items-center gap-1 px-3 py-1 rounded-[20px] font-syne text-[11px] font-semibold uppercase"
+      className="inline-flex items-center gap-1 px-3 py-1 rounded-[20px] font-heading text-[11px] font-semibold uppercase"
       style={{
         background: bg,
         border: `1px solid ${border}`,

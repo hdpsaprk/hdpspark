@@ -90,7 +90,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0A0E1A' }}>
+    <div className="min-h-screen" style={{ background: '#FAF9F5' }}>
       <Header step={step} />
       <PageShell>
         {error && <ErrorBox message={error} detail={errorDetail} />}

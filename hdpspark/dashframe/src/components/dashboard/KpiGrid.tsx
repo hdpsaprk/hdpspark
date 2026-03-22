@@ -3,8 +3,8 @@ import { DashboardKpi } from '../../types';
 import { fmt } from '../../lib/fmt';
 
 const CHART_COLORS = [
-  '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
-  '#EF4444', '#06B6D4', '#F97316', '#EC4899',
+  '#D97757', '#6A9BCC', '#788C5D', '#9B7DB8',
+  '#DC2626', '#0891B2', '#EA580C', '#DB2777',
 ];
 
 interface Props {
@@ -26,41 +26,41 @@ export const KpiGrid: React.FC<Props> = ({ kpis }) => {
           key={i}
           className="rounded-[12px] p-4"
           style={{
-            background: '#161D2E',
-            border: '1px solid #1F2D45',
+            background: '#FFFFFF',
+            border: '1px solid #E8E6DC',
             borderTop: `2px solid ${CHART_COLORS[i % CHART_COLORS.length]}`,
           }}
         >
           <div
-            className="font-syne text-[10px] font-bold uppercase"
-            style={{ color: '#64748B' }}
+            className="font-heading text-[10px] font-bold uppercase"
+            style={{ color: '#B0AEA5' }}
           >
             {kpi.label}
           </div>
           <div
             className="font-mono text-[28px] font-extrabold mt-1"
-            style={{ color: '#F1F5F9' }}
+            style={{ color: '#141413' }}
           >
             {fmt(kpi.value)}
           </div>
           {kpi.sub && (
             <div
               className="font-mono text-[11px] mt-0.5"
-              style={{ color: '#64748B' }}
+              style={{ color: '#6B5E54' }}
             >
               {kpi.sub}
             </div>
           )}
           {kpi.trend && (
             <div
-              className="font-syne text-[11px] font-bold mt-1"
+              className="font-heading text-[11px] font-bold mt-1"
               style={{
                 color:
                   kpi.dir === 'up'
-                    ? '#10B981'
+                    ? '#788C5D'
                     : kpi.dir === 'down'
-                      ? '#EF4444'
-                      : '#64748B',
+                      ? '#DC2626'
+                      : '#B0AEA5',
               }}
             >
               {kpi.trend}

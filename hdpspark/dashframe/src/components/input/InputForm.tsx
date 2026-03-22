@@ -63,7 +63,7 @@ export const InputForm: React.FC<Props> = ({
           </Button>
         )}
         {parsedFile && (
-          <span className="font-mono text-[12px]" style={{ color: '#475569' }}>
+          <span className="font-mono text-[12px]" style={{ color: '#B0AEA5' }}>
             {rowCount} rows · {colCount} cols · &quot;{activeSheet}&quot;
           </span>
         )}

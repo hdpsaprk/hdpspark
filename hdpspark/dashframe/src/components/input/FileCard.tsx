@@ -26,7 +26,7 @@ export const FileCard: React.FC<Props> = ({
   return (
     <div
       className="rounded-[12px] p-6"
-      style={{ background: '#161D2E', border: '1px solid #1F2D45' }}
+      style={{ background: '#FFFFFF', border: '1px solid #E8E6DC' }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -34,13 +34,13 @@ export const FileCard: React.FC<Props> = ({
           className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold"
           style={
             parsedFile
-              ? { background: '#10B98120', color: '#10B981' }
-              : { background: '#1E3A5F', color: '#3B82F6' }
+              ? { background: '#788C5D20', color: '#788C5D' }
+              : { background: '#D9775712', color: '#D97757' }
           }
         >
           {parsedFile ? '✓' : '1'}
         </div>
-        <span className="font-syne text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+        <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-[#B0AEA5]">
           Spreadsheet Data
         </span>
       </div>
@@ -50,9 +50,9 @@ export const FileCard: React.FC<Props> = ({
         <div
           className="rounded-[8px] px-3 py-2 mb-3 font-mono text-[12px]"
           style={{
-            background: '#F59E0B12',
-            border: '1px solid #F59E0B38',
-            color: '#F59E0B',
+            background: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            color: '#92400E',
           }}
         >
           Loading spreadsheet parser…
@@ -63,13 +63,13 @@ export const FileCard: React.FC<Props> = ({
       {!parsedFile ? (
         <div
           className="rounded-[8px] p-5 mb-4 flex flex-col items-center gap-2"
-          style={{ background: '#1E293B', border: '1px dashed #1F2D45' }}
+          style={{ background: '#F3F0E8', border: '1px dashed #D4D0C4' }}
         >
           <span className="text-[24px]">📁</span>
-          <span className="font-syne text-[13px] text-[#475569]">
+          <span className="font-body text-[13px] text-[#B0AEA5]">
             No file selected
           </span>
-          <span className="font-mono text-[11px] text-[#334155]">
+          <span className="font-mono text-[11px] text-[#D4D0C4]">
             Supports .xlsx · .xls
           </span>
         </div>
@@ -77,20 +77,20 @@ export const FileCard: React.FC<Props> = ({
         <div
           className="rounded-[8px] px-4 py-3 mb-4"
           style={{
-            background: '#10B98112',
-            border: '1px solid #10B98138',
+            background: '#788C5D12',
+            border: '1px solid #788C5D38',
           }}
         >
           <div className="flex items-center gap-2">
             <span className="text-[14px]">✅</span>
             <span
               className="font-mono text-[12px] font-bold truncate"
-              style={{ color: '#10B981' }}
+              style={{ color: '#788C5D' }}
             >
               {parsedFile.fileName}
             </span>
           </div>
-          <div className="font-mono text-[11px] mt-1" style={{ color: '#64748B' }}>
+          <div className="font-mono text-[11px] mt-1" style={{ color: '#6B5E54' }}>
             {rowCount} rows · {colCount} cols ·{' '}
             {parsedFile.sheetNames.length} sheet
             {parsedFile.sheetNames.length > 1 ? 's' : ''}
@@ -127,18 +127,18 @@ export const FileCard: React.FC<Props> = ({
             <button
               key={name}
               onClick={() => onSheetChange(name)}
-              className="px-2.5 py-1 rounded-[5px] font-syne text-[11px] font-semibold transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-[5px] font-heading text-[11px] font-semibold transition-colors cursor-pointer"
               style={
                 name === activeSheet
                   ? {
-                      background: '#1E3A5F',
-                      border: '1px solid #3B82F6',
-                      color: '#3B82F6',
+                      background: '#D9775712',
+                      border: '1px solid #D97757',
+                      color: '#D97757',
                     }
                   : {
                       background: 'transparent',
-                      border: '1px solid #1F2D45',
-                      color: '#475569',
+                      border: '1px solid #E8E6DC',
+                      color: '#B0AEA5',
                     }
               }
             >

@@ -19,19 +19,20 @@ import {
 import { DashboardChart } from '../../types';
 
 const CHART_COLORS = [
-  '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
-  '#EF4444', '#06B6D4', '#F97316', '#EC4899',
+  '#D97757', '#6A9BCC', '#788C5D', '#9B7DB8',
+  '#DC2626', '#0891B2', '#EA580C', '#DB2777',
 ];
 
-const AXIS_TICK = { fill: '#64748B', fontSize: 11 };
-const GRID_STYLE = { stroke: '#1F2D45', strokeDasharray: '3 3' };
+const AXIS_TICK = { fill: '#B0AEA5', fontSize: 11 };
+const GRID_STYLE = { stroke: '#E8E6DC', strokeDasharray: '3 3' };
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#111827',
-    border: '1px solid #1F2D45',
+    background: '#FFFFFF',
+    border: '1px solid #E8E6DC',
     borderRadius: 8,
     fontSize: 12,
-    color: '#F1F5F9',
+    color: '#141413',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
   },
 };
 

@@ -19,12 +19,12 @@ export const Dashboard: React.FC<Props> = ({ config, onReset }) => (
     <div className="flex items-start justify-between flex-wrap gap-4">
       <div>
         <h1
-          className="font-syne text-[22px] font-bold"
-          style={{ color: '#F1F5F9' }}
+          className="font-heading text-[22px] font-bold"
+          style={{ color: '#141413' }}
         >
           {config.title}
         </h1>
-        <p className="font-syne text-[13px] mt-1" style={{ color: '#64748B' }}>
+        <p className="font-body text-[13px] mt-1" style={{ color: '#6B5E54' }}>
           {config.subtitle}
         </p>
         {config.tags.length > 0 && (
@@ -34,9 +34,9 @@ export const Dashboard: React.FC<Props> = ({ config, onReset }) => (
                 key={i}
                 className="px-2 py-0.5 rounded-[4px] font-mono text-[10px] font-bold uppercase"
                 style={{
-                  background: '#1E3A5F',
-                  color: '#3B82F6',
-                  border: '1px solid #3B82F640',
+                  background: '#D9775712',
+                  color: '#D97757',
+                  border: '1px solid #D9775740',
                 }}
               >
                 {tag}

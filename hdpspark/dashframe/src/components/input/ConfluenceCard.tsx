@@ -13,7 +13,7 @@ export const ConfluenceCard: React.FC<Props> = ({ value, onChange }) => {
   return (
     <div
       className="rounded-[12px] p-6"
-      style={{ background: '#161D2E', border: '1px solid #1F2D45' }}
+      style={{ background: '#FFFFFF', border: '1px solid #E8E6DC' }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -21,26 +21,26 @@ export const ConfluenceCard: React.FC<Props> = ({ value, onChange }) => {
           className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold"
           style={
             wordCount > 0
-              ? { background: '#10B98120', color: '#10B981' }
-              : { background: '#1E3A5F', color: '#3B82F6' }
+              ? { background: '#788C5D20', color: '#788C5D' }
+              : { background: '#D9775712', color: '#D97757' }
           }
         >
           {wordCount > 0 ? '✓' : '2'}
         </div>
-        <span className="font-syne text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+        <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-[#B0AEA5]">
           Confluence Context
-          <span className="font-normal ml-1 text-[#334155]">(optional)</span>
+          <span className="font-normal ml-1 text-[#D4D0C4]">(optional)</span>
         </span>
       </div>
 
       <textarea
-        className="w-full rounded-[8px] p-5 font-syne text-[13px] resize-y min-h-[120px] outline-none transition-colors placeholder:text-[#334155]"
+        className="w-full rounded-[8px] p-5 font-body text-[13px] resize-y min-h-[120px] outline-none transition-colors placeholder:text-[#D4D0C4]"
         style={{
-          background: '#1E293B',
+          background: '#F3F0E8',
           border: value
-            ? '1px solid #3B82F6'
-            : '1px solid #1F2D45',
-          color: '#F1F5F9',
+            ? '1px solid #D97757'
+            : '1px solid #E8E6DC',
+          color: '#141413',
         }}
         placeholder="Paste text from a Confluence page — sprint goals, team notes, blockers, meeting notes, etc. This context helps the AI generate more relevant insights."
         value={value}
@@ -48,7 +48,7 @@ export const ConfluenceCard: React.FC<Props> = ({ value, onChange }) => {
       />
 
       {wordCount > 0 && (
-        <p className="mt-2 font-mono text-[11px]" style={{ color: '#10B981' }}>
+        <p className="mt-2 font-mono text-[11px]" style={{ color: '#788C5D' }}>
           ✓ {wordCount} words
         </p>
       )}

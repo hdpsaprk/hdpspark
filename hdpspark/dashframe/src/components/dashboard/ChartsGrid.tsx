@@ -15,17 +15,17 @@ export const ChartsGrid: React.FC<Props> = ({ charts }) => {
         <div
           key={i}
           className="rounded-[12px] p-5"
-          style={{ background: '#161D2E', border: '1px solid #1F2D45' }}
+          style={{ background: '#FFFFFF', border: '1px solid #E8E6DC' }}
         >
           <h3
-            className="font-syne text-[13px] font-bold mb-1"
-            style={{ color: '#F1F5F9' }}
+            className="font-heading text-[13px] font-bold mb-1"
+            style={{ color: '#141413' }}
           >
             {chart.title}
           </h3>
           <p
-            className="font-syne text-[11px] mb-3"
-            style={{ color: '#64748B' }}
+            className="font-body text-[11px] mb-3"
+            style={{ color: '#B0AEA5' }}
           >
             {chart.description}
           </p>

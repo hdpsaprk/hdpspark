@@ -21,14 +21,14 @@ export const Button: React.FC<Props> = ({
   let style = '';
   if (variant === 'primary') {
     style = disabled
-      ? 'bg-accent/30 text-white/40 cursor-not-allowed font-syne text-[14px] font-bold px-5 py-2.5'
-      : 'bg-accent hover:bg-blue-600 text-white font-syne text-[14px] font-bold px-5 py-2.5';
+      ? 'bg-[#D97757]/30 text-white/50 cursor-not-allowed font-heading text-[14px] font-bold px-5 py-2.5'
+      : 'bg-[#D97757] hover:bg-[#C4623F] text-white font-heading text-[14px] font-bold px-5 py-2.5';
   } else if (variant === 'secondary') {
     style =
-      'bg-transparent border border-border-default hover:border-border-hover text-[#64748B] hover:text-[#94A3B8] font-syne text-[13px] font-semibold px-4 py-2';
+      'bg-transparent border border-[#E8E6DC] hover:border-[#D4D0C4] text-[#6B5E54] hover:text-[#141413] font-heading text-[13px] font-semibold px-4 py-2';
   } else {
     style =
-      'bg-transparent text-[#64748B] hover:text-[#94A3B8] font-syne text-[13px] font-semibold px-3 py-2';
+      'bg-transparent text-[#6B5E54] hover:text-[#141413] font-heading text-[13px] font-semibold px-3 py-2';
   }
 
   return (
